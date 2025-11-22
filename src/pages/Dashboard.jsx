@@ -23,8 +23,18 @@ function Dashboard() {
       setLinks(response.data);
       setError(null);
     } catch (err) {
-      setError('Failed to load links. Please try again.');
-      console.error(err);
+      // More detailed error message
+      if (err.code === 'ERR_NETWORK' || err.message === 'Network Error') {
+        setError(`Cannot connect to backend. Make sure the backend is running at ${API_URL}`);
+      } else if (err.response?.status === 404) {
+        setError('API endpoint not found. Check your backend configuration.');
+      } else if (err.response?.status >= 500) {
+        setError('Backend server error. Check your backend logs.');
+      } else {
+        setError(`Failed to load links: ${err.response?.data?.error || err.message}`);
+      }
+      console.error('API Error:', err);
+      console.error('API URL:', API_URL);
     } finally {
       setLoading(false);
     }
